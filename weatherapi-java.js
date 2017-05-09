@@ -46,7 +46,8 @@ function getWeatherWithGeo() {
 
 //Function to run Weather API with User Input
 function getWeatherWithUserInput() {
-	response.preventDefault();
+	return new Promise(function(resolve, reject) {
+	
 	var cityName = $("#city-name").val().trim();
 	var stateName = $("#state-name").val().trim();
 	var weatherCSQueryURL = "http://api.openweathermap.org/data/2.5/weather?q=" + cityName + "," + stateName + ",US=&appid=" + WeatherAPIKey;
@@ -63,13 +64,20 @@ function getWeatherWithUserInput() {
 			$(".temp").html("Temperature (F) " + Math.floor(f_temp));
 			// var icon = "<img src='http://openweathermaps.org/img/w/"+response.weather[0].icon+".png'>";
 			// $(".code").html(icon);
-			return response.weather[0].id;
+			console.log(response.weather[0].id);
+			resolve(response.weather[0].id);
 	});
+
+});
 };
 
-$("#input-location").on("click", function(response) {
-  var weatherCondition = getWeatherWithUserInput();
-	showWidget(weatherCondition);
+$("#input-location").on("click", function(event) {
+	event.preventDefault();
+  getWeatherWithUserInput()
+	.then(function(response) {
+		console.log(response);
+		showWidget(response);
+	})
 
 });
 
@@ -82,8 +90,9 @@ $(window).on("load", function(){
 $("#yes-geo").click(function() {
   $("#myModal").modal("toggle");
   //Do your request
-  var weatherCondition = getWeatherWithGeo();
-	showWidget(weatherCondition);
+  var weatherID = getWeatherWithGeo();
+	console.log(weatherID);
+	showWidget(weatherID);
   //Remove modal button
   // $("myModal")modal("hide");
 })
@@ -125,17 +134,14 @@ function showWidget(weather) {
 
 };
 
-function weatherToTag(weatherCondition) {
-	switch(weatherCondition){
-		case 'rain':
+function weatherToTag(weatherID) {
+		if (weatherID >= 200 && weatherID <= 599) {
 			return ['/discover/downtempo/', '/discover/chillout/', '/discover/ambient/'];
-			break;
-		case 'snow':
+		} else if (weatherID >= 600 && weatherID <= 622) {
 			return ['/discover/jazz/', '/discover/minimal/'];
-			break;
-		default:
+		} else {
 			return ['/discvoer/soul/', '/discover/afrobeat/', '/discover/reggae/'];
-	}
+		}
 };
 
 function findMusicTag(response, tagsToFind) {
